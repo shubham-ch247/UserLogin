@@ -37,20 +37,19 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await userModelSchema.findOne({ email });
-    if (user.email === email && user.password === password) {
-      req.userId = user._id;
-      req.userEmail = user.email;
-      return res.status(email+"User Succesfully Login!");
-    } else {
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
       return res.status(422).json({
-        message: "User Details is Incorrect !"+email,
-      })
+        errors: { message: "PASSWORD_NOT_MATCH" },
+      });
     }
+    return res.status(200).json({
+      message: email + "***" + "User Succesfully Login!",
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message:
-        "Please Create New User Account!",
+      message: "Please Create New User Account!",
       error: error,
     });
   }
